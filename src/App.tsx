@@ -1,15 +1,15 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Registration from './components/Registration';
 import Products from './components/Products';
+import Categories from "./components/Categories.tsx";
 
 function App() {
   return (
       <BrowserRouter>
         <Routes>
           <Route path="/registration" element={<Registration />} />
-          {/*<Route path="/categories" element={<Categories />} />*/}
-          <Route path="/products" element={<Products />} />
-
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/products/:slug" element={<Products />} />
         </Routes>
       </BrowserRouter>
   );
