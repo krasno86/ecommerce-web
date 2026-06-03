@@ -23,7 +23,7 @@ function App() {
 
                 if (response.data.success) {
                     setCategories(response.data.data);
-                    console.log(response.data.data[0]?.image[0]);
+                    console.log(response.data.data);
                 }
             } catch (err: any) {
                 setError('Failed to load categories. Please check if the backend server is running.');
@@ -35,7 +35,6 @@ function App() {
     }, []);
 
     return (
-        // max-w-5xl зажимает контент по бокам, чтобы 2 карточки не растягивались на ультрашироких мониторах
         <div className="max-w-5xl mx-auto p-6 min-h-[85vh] flex flex-col justify-center">
             <header className="mb-12 text-center">
                 <h1 className="text-4xl font-black tracking-tight text-[var(--text-h)] md:text-5xl uppercase">
@@ -53,14 +52,12 @@ function App() {
                 </div>
             )}
 
-            {/* Сетка строго на 2 колонки с хорошим отступом (gap-8) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {categories.map((category) => (
                     <div
                         key={category._id}
                         className="group relative flex flex-col overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg)] shadow-md hover:shadow-xl hover:border-[var(--accent)]/30 transition-all duration-500 cursor-pointer"
                     >
-                        {/* Изменили пропорцию на aspect-[16/10] (чуть шире и аккуратнее), добавили легкий оверлей */}
                         <div className="aspect-[16/10] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative">
                             <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors duration-500 z-10" />
                             {category.image && category.image.length > 0 ? (
@@ -79,11 +76,10 @@ function App() {
                             )}
                         </div>
 
-                        {/* Контент карточки с акцентом на название */}
                         <div className="flex flex-1 flex-col p-6 bg-gradient-to-b from-transparent to-black/[0.02] dark:to-white/[0.01]">
                             <div className="flex items-center justify-between gap-4 w-full">
                                 <Link
-                                    to={`/products/${category.slug}`}
+                                    to={`/products/${category._id}`}
                                     className="group/link flex-1 focus:outline-none text-left"
                                 >
                                     <h2 className="text-2xl font-extrabold text-[var(--text-h)] group-hover/link:text-[var(--accent)] transition-colors duration-300">
@@ -91,7 +87,6 @@ function App() {
                                     </h2>
                                 </Link>
 
-                                {/* Правая часть: Круглая кнопка со стрелкой (теперь снаружи ссылки и строго в ряд) */}
                                 <div className="w-10 h-10 shrink-0 rounded-full border border-[var(--border)] flex items-center justify-center bg-[var(--bg)] group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] text-[var(--text-h)] group-hover:text-white transition-all duration-300 shadow-sm">
                                     <span className="text-xl font-light transform transition-transform group-hover:translate-x-0.5">→</span>
                                 </div>

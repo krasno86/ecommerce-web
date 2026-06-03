@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Registration from './components/Registration';
 import Products from './components/Products';
+import AllProducts from './components/AllProducts';
 import Categories from "./components/Categories.tsx";
 
 function App() {
@@ -9,7 +10,8 @@ function App() {
         <Routes>
           <Route path="/registration" element={<Registration />} />
           <Route path="/categories" element={<Categories />} />
-          <Route path="/products/:slug" element={<Products />} />
+          <Route path="/products" element={<AllProducts />} />
+          <Route path="/products/:id" element={<Products />} />
         </Routes>
       </BrowserRouter>
   );
