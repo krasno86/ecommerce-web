@@ -20,14 +20,13 @@ function App() {
     const [category, setCategory] = useState<Category | null>(null);
     const [products, setProducts] = useState<Product[]>([]);
     const [error, setError] = useState<string>('');
-
     const [searchQuery, setSearchQuery] = useState<string>('');
 
     const handleClick = async (productId: string) => {
         try {
             const response = await api.post('/cart', { productId });
             if (response.data.success) {
-                setQuantity(response.data.data.totalQuantity);
+                setQuantity(response.data.data.totalQuantity || response.data.totalQuantity);
             }
         } catch (err: any) {
             setError('Failed to add product to cart. Please check backend connection.');
@@ -35,39 +34,45 @@ function App() {
         }
     };
 
-    const fetchFilteredProducts = async () => {
+    const handleSearchSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+        e.preventDefault();
         try {
             const params: any = {};
             if (id) params.category = id;
             if (searchQuery.trim()) params.search = searchQuery.trim();
 
             const response = await api.get('/products', { params });
-
             if (response.data.success) {
                 setProducts(response.data.data);
-
-                if (response.data.data.length > 0 && response.data.data[0].category) {
-                    setCategory({ name: response.data.data[0].category.title });
-                } else if (!id) {
-                    setCategory({ name: 'All Products' });
-                }
             }
         } catch (err: any) {
-            setError('Failed to load products. Please check if the backend server is running.');
+            setError('Search failed. Please try again.');
             console.error(err);
         }
     };
 
     useEffect(() => {
-        if (id) {
-            fetchFilteredProducts();
-        }
-    }, [id]);
+        const fetchInitialData = async () => {
+            try {
+                const resProducts = await api.get(`/categories/${id}`);
+                if (resProducts.data.success) {
+                    setCategory(resProducts.data.data.category);
+                    setProducts(resProducts.data.data.products);
+                }
 
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        fetchFilteredProducts();
-    };
+                const resCart = await api.get('/cart');
+                if (resCart.data.success) {
+                    setQuantity(resCart.data.totalQuantity || 0);
+                }
+
+            } catch (err: any) {
+                setError('Failed to load initial data. Please check if the backend server is running.');
+                console.error(err);
+            }
+        };
+
+        if (id) fetchInitialData();
+    }, [id]);
 
     return (
         <div className="max-w-6xl mx-auto p-6 text-left relative">
