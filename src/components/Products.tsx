@@ -14,56 +14,60 @@ interface Category {
     name: string;
 }
 
-interface Cart {
-    _id: string;
-    user: string;
-    price: number;
-    items: object[];
-}
-
 function App() {
-    const [cart, setCart] = useState<Cart | null>(null);
     const [cartQuantity, setQuantity] = useState<number>(0);
     const { id } = useParams<{ id: string }>();
     const [category, setCategory] = useState<Category | null>(null);
     const [products, setProducts] = useState<Product[]>([]);
     const [error, setError] = useState<string>('');
 
-    const handleClick = (id: string) => {
-        const addToCart = async () => {
-            try {
-                const response = await api.post('/cart', { productId: id });
+    const [searchQuery, setSearchQuery] = useState<string>('');
 
-                if (response.data.success) {
-                    setCart(response.data.data.cart);
-                    setQuantity(response.data.data.totalQuantity);
-                    console.log(cart);
-                }
-            } catch (err: any) {
-                setError('Failed to add product to cart. Please check backend connection.');
-                console.error(err);
+    const handleClick = async (productId: string) => {
+        try {
+            const response = await api.post('/cart', { productId });
+            if (response.data.success) {
+                setQuantity(response.data.data.totalQuantity);
             }
-        };
-        addToCart();
+        } catch (err: any) {
+            setError('Failed to add product to cart. Please check backend connection.');
+            console.error(err);
+        }
+    };
+
+    const fetchFilteredProducts = async () => {
+        try {
+            const params: any = {};
+            if (id) params.category = id;
+            if (searchQuery.trim()) params.search = searchQuery.trim();
+
+            const response = await api.get('/products', { params });
+
+            if (response.data.success) {
+                setProducts(response.data.data);
+
+                if (response.data.data.length > 0 && response.data.data[0].category) {
+                    setCategory({ name: response.data.data[0].category.title });
+                } else if (!id) {
+                    setCategory({ name: 'All Products' });
+                }
+            }
+        } catch (err: any) {
+            setError('Failed to load products. Please check if the backend server is running.');
+            console.error(err);
+        }
     };
 
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const response = await api.get(`/categories/${id}`);
-
-                if (response.data.success) {
-                    setCategory(response.data.data.category);
-                    setProducts(response.data.data.products);
-                }
-            } catch (err: any) {
-                setError('Failed to load products. Please check if the backend server is running.');
-                console.error(err);
-            }
-        };
-
-        if (id) fetchProducts();
+        if (id) {
+            fetchFilteredProducts();
+        }
     }, [id]);
+
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        fetchFilteredProducts();
+    };
 
     return (
         <div className="max-w-6xl mx-auto p-6 text-left relative">
@@ -84,7 +88,7 @@ function App() {
                     </svg>
 
                     {cartQuantity > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-bold text-white shadow-sm animate-none">
+                        <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-bold text-white shadow-sm">
                             {cartQuantity}
                         </span>
                     )}
@@ -97,13 +101,31 @@ function App() {
                 </Link>
             </div>
 
-            <header className="mb-10">
-                <h1 className="text-3xl font-black tracking-tight text-[var(--text-h)] md:text-4xl uppercase">
-                    {category?.name || 'Loading Category...'}
-                </h1>
-                <p className="mt-1 text-sm text-[var(--text)]/60">
-                    Showing {products.length} products
-                </p>
+            <header className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-black tracking-tight text-[var(--text-h)] md:text-4xl uppercase">
+                        {category?.name || 'Loading Category...'}
+                    </h1>
+                    <p className="mt-1 text-sm text-[var(--text)]/60">
+                        Showing {products.length} products
+                    </p>
+                </div>
+
+                <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:w-80">
+                    <input
+                        type="text"
+                        placeholder="Search products..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="flex-1 px-4 py-2 text-sm rounded-xl border border-[var(--border)] bg-[var(--bg)] text-[var(--text-h)] focus:outline-none focus:border-[var(--accent)] transition-colors"
+                    />
+                    <button
+                        type="submit"
+                        className="px-4 py-2 bg-[var(--accent)] text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity shadow-sm uppercase tracking-wider"
+                    >
+                        Search
+                    </button>
+                </form>
             </header>
 
             {error && (
@@ -159,7 +181,7 @@ function App() {
 
             {products.length === 0 && !error && (
                 <div className="text-center py-12 border border-dashed border-[var(--border)] rounded-2xl">
-                    <p className="text-[var(--text)]">No products found in this category...</p>
+                    <p className="text-[var(--text)]">No products found...</p>
                 </div>
             )}
         </div>
