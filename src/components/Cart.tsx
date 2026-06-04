@@ -21,6 +21,7 @@ function App() {
     const [cartQuantity, setQuantity] = useState<number>(0);
     const [totalAmount, setTotalAmount] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
+    const [isOrdered, setIsOrdered] = useState<boolean>(false);
 
     const fetchCart = async () => {
         try {
@@ -75,6 +76,24 @@ function App() {
         }
     };
 
+    const handleCheckout = async () => {
+        try {
+            const response = await api.post('/orders', {
+                shippingAddress: "SomeStreet 22, Hamburg"
+            });
+
+            if (response.data.success) {
+                setIsOrdered(true);
+                setProducts([]);
+                setQuantity(0);
+                setTotalAmount(0);
+            }
+        } catch (err: any) {
+            setError(err.response?.data?.error || 'Order creation failed.');
+            console.error(err);
+        }
+    };
+
     if (loading) {
         return <div className="text-center py-20 font-medium text-[var(--text)]/70">Loading cart...</div>;
     }
@@ -100,7 +119,28 @@ function App() {
                 </p>
             </header>
 
-            {products.length === 0 ? (
+            {isOrdered ? (
+                <div className="text-center py-16 px-4 border border-[var(--border)] rounded-2xl bg-[var(--bg)] shadow-sm max-w-md mx-auto mt-8 space-y-5">
+                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full flex items-center justify-center mx-auto text-3xl animate-bounce">
+                        ✓
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-black text-[var(--text-h)] uppercase tracking-tight">Order Processed!</h2>
+                        <p className="text-sm text-[var(--text)]/70">
+                            Thank you for your purchase. Your order has been successfully created and sent to our team.
+                        </p>
+                    </div>
+                    <div className="pt-2">
+                        <Link
+                            to="/categories"
+                            onClick={() => setIsOrdered(false)}
+                            className="inline-block w-full py-3 bg-[var(--accent)] text-white font-bold text-xs rounded-xl uppercase tracking-wider hover:opacity-95 transition-opacity text-center"
+                        >
+                            Continue Shopping
+                        </Link>
+                    </div>
+                </div>
+            ) : products.length === 0 ? (
                 <div className="text-center py-20 border border-dashed border-[var(--border)] rounded-2xl mt-8">
                     <p className="text-[var(--text)]/70 mb-4">Your shopping cart is completely empty</p>
                     <Link to="/categories" className="px-6 py-2.5 bg-[var(--accent)] text-white font-bold text-xs rounded-xl uppercase inline-block">
@@ -181,7 +221,8 @@ function App() {
                             </div>
                         </div>
 
-                        <button className="w-full py-3.5 bg-[var(--accent)] text-white font-bold text-sm rounded-xl hover:opacity-95 shadow-sm transition-opacity uppercase tracking-wider">
+                        <button onClick={handleCheckout}
+                                className="w-full py-3.5 bg-[var(--accent)] text-white font-bold text-sm rounded-xl hover:opacity-95 shadow-sm transition-opacity uppercase tracking-wider">
                             Proceed to Checkout
                         </button>
                     </div>
