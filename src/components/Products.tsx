@@ -35,11 +35,9 @@ function App() {
                 const response = await api.post('/cart', { productId: id });
 
                 if (response.data.success) {
-                    console.log(response.data.data.totalQuantity);
-                    console.log(response.data.data.cart);
-
                     setCart(response.data.data.cart);
                     setQuantity(response.data.data.totalQuantity);
+                    console.log(cart);
                 }
             } catch (err: any) {
                 setError('Failed to add product to cart. Please check backend connection.');
