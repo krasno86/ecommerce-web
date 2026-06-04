@@ -74,7 +74,6 @@ const RegistrationForm: React.FC = () => {
                         alert('Welcome! Registration successful.');
                         const token = response.data.data.token;
                         localStorage.setItem('token', token);
-                        // navigate('/products');
                         navigate('/categories');
                     }
                 } catch (err: any) {

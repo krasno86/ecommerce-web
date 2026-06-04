@@ -14,11 +14,40 @@ interface Category {
     name: string;
 }
 
+interface Cart {
+    _id: string;
+    user: string;
+    price: number;
+    items: object[];
+}
+
 function App() {
+    const [cart, setCart] = useState<Cart | null>(null);
+    const [cartQuantity, setQuantity] = useState<number>(0);
     const { id } = useParams<{ id: string }>();
     const [category, setCategory] = useState<Category | null>(null);
     const [products, setProducts] = useState<Product[]>([]);
     const [error, setError] = useState<string>('');
+
+    const handleClick = (id: string) => {
+        const addToCart = async () => {
+            try {
+                const response = await api.post('/cart', { productId: id });
+
+                if (response.data.success) {
+                    console.log(response.data.data.totalQuantity);
+                    console.log(response.data.data.cart);
+
+                    setCart(response.data.data.cart);
+                    setQuantity(response.data.data.totalQuantity);
+                }
+            } catch (err: any) {
+                setError('Failed to add product to cart. Please check backend connection.');
+                console.error(err);
+            }
+        };
+        addToCart();
+    };
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -39,7 +68,31 @@ function App() {
     }, [id]);
 
     return (
-        <div className="max-w-6xl mx-auto p-6 text-left">
+        <div className="max-w-6xl mx-auto p-6 text-left relative">
+            <div className="absolute top-6 right-6 z-50">
+                <Link
+                    to="/cart"
+                    className="relative flex items-center justify-center w-12 h-12 rounded-2xl border border-[var(--border)] bg-[var(--bg)] text-[var(--text-h)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all duration-300 shadow-sm group"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="w-5 h-5 transition-transform group-hover:scale-110"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
+                    </svg>
+
+                    {cartQuantity > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-bold text-white shadow-sm animate-none">
+                            {cartQuantity}
+                        </span>
+                    )}
+                </Link>
+            </div>
+
             <div className="mb-6">
                 <Link to="/categories" className="text-sm font-medium text-[var(--accent)] hover:underline">
                     ← Back to categories
@@ -74,7 +127,6 @@ function App() {
                                     alt={product.title}
                                     className="h-full w-full object-cover object-center group-hover:scale-103 transition-transform duration-500"
                                     onError={(e) => {
-                                        // Заглушка, если картинка на бэке удалена или повреждена
                                         (e.target as HTMLImageElement).src = 'https://placehold.co/600x450?text=No+Product+Image';
                                     }}
                                 />
@@ -98,7 +150,7 @@ function App() {
                                 <span className="font-mono font-black text-xl text-[var(--text-h)]">
                                     ${product.price}
                                 </span>
-                                <button className="px-4 py-2 bg-[var(--accent)] text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity shadow-sm">
+                                <button onClick={() => handleClick(product._id)} className="px-4 py-2 bg-[var(--accent)] text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity shadow-sm">
                                     Add to Cart
                                 </button>
                             </div>
