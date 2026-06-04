@@ -22,26 +22,47 @@ function App() {
     const [totalAmount, setTotalAmount] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
 
-    useEffect(() => {
-        const fetchCart = async () => {
-            try {
-                const response = await api.get('/cart');
-
-                if (response.data.success) {
-                    setProducts(response.data.data?.items || []);
-                    setQuantity(response.data.totalQuantity || 0);
-                    setTotalAmount(response.data.totalAmount || 0);
-                }
-            } catch (err: any) {
-                setError('Failed to load cart data. Please check if the backend server is running.');
-                console.error(err);
-            } finally {
-                setLoading(false);
+    const fetchCart = async () => {
+        try {
+            const response = await api.get('/cart');
+            if (response.data.success) {
+                setProducts(response.data.data?.items || []);
+                setQuantity(response.data.totalQuantity || 0);
+                setTotalAmount(response.data.totalAmount || 0);
             }
-        };
+        } catch (err: any) {
+            setError('Failed to load cart data. Please check if the backend server is running.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchCart();
     }, []);
+
+    const handleIncrease = async (productId: string) => {
+        try {
+            const response = await api.post('/cart', { productId, quantity: 1 });
+            if (response.data.success) {
+                fetchCart();
+            }
+        } catch (err) {
+            console.error('Error adding item to cart:', err);
+        }
+    };
+
+    const handleDecrease = async (productId: string) => {
+        try {
+            const response = await api.delete(`/cart/${productId}`);
+            if (response.data.success) {
+                fetchCart();
+            }
+        } catch (err) {
+            console.error('Error deleting item from cart:', err);
+        }
+    };
 
     if (loading) {
         return <div className="text-center py-20 font-medium text-[var(--text)]/70">Loading cart...</div>;
@@ -101,13 +122,15 @@ function App() {
                                 </div>
 
                                 <div className="flex items-center border border-[var(--border)] rounded-xl bg-[var(--bg)] overflow-hidden">
-                                    <button className="px-3 py-1.5 text-lg font-bold text-[var(--text)]/70 hover:bg-[var(--border)]/20 transition-colors">
+                                    <button onClick={() => handleDecrease(item.product._id)}
+                                            className="px-3 py-1.5 text-lg font-bold text-[var(--text)]/70 hover:bg-[var(--border)]/20 transition-colors">
                                         −
                                     </button>
                                     <span className="px-3 font-mono font-bold text-sm text-[var(--text-h)]">
                                         {item.quantity}
                                     </span>
-                                    <button className="px-3 py-1.5 text-lg font-bold text-[var(--text)]/70 hover:bg-[var(--border)]/20 transition-colors">
+                                    <button onClick={() => handleIncrease(item.product._id)}
+                                            className="px-3 py-1.5 text-lg font-bold text-[var(--text)]/70 hover:bg-[var(--border)]/20 transition-colors">
                                         +
                                     </button>
                                 </div>

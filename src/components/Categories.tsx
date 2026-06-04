@@ -58,40 +58,38 @@ function App() {
                         key={category._id}
                         className="group relative flex flex-col overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg)] shadow-md hover:shadow-xl hover:border-[var(--accent)]/30 transition-all duration-500 cursor-pointer"
                     >
-                        <div className="aspect-[16/10] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative">
-                            <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors duration-500 z-10" />
-                            {category.image && category.image.length > 0 ? (
-                                <img
-                                    src={`http://localhost:3000${category.image[0]}`}
-                                    alt={category.name}
-                                    className="h-full w-full object-cover object-center scale-100 group-hover:scale-102 transition-transform duration-700 ease-out"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://placehold.co/600x450?text=No+Image';
-                                    }}
-                                />
-                            ) : (
-                                <div className="h-full w-full flex items-center justify-center text-zinc-400">
-                                    No image
-                                </div>
-                            )}
-                        </div>
+                        <Link to={`/products/${category._id}`} className="group/link flex-1 focus:outline-none text-left">
 
-                        <div className="flex flex-1 flex-col p-6 bg-gradient-to-b from-transparent to-black/[0.02] dark:to-white/[0.01]">
-                            <div className="flex items-center justify-between gap-4 w-full">
-                                <Link
-                                    to={`/products/${category._id}`}
-                                    className="group/link flex-1 focus:outline-none text-left"
-                                >
+                            <div className="aspect-[16/10] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative">
+                                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors duration-500 z-10" />
+                                {category.image && category.image.length > 0 ? (
+                                    <img
+                                        src={`http://localhost:3000${category.image[0]}`}
+                                        alt={category.name}
+                                        className="h-full w-full object-cover object-center scale-100 group-hover:scale-102 transition-transform duration-700 ease-out"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = 'https://placehold.co/600x450?text=No+Image';
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="h-full w-full flex items-center justify-center text-zinc-400">
+                                        No image
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex flex-1 flex-col p-6 bg-gradient-to-b from-transparent to-black/[0.02] dark:to-white/[0.01]">
+                                <div className="flex items-center justify-between gap-4 w-full">
                                     <h2 className="text-2xl font-extrabold text-[var(--text-h)] group-hover/link:text-[var(--accent)] transition-colors duration-300">
                                         {category.name}
                                     </h2>
-                                </Link>
 
-                                <div className="w-10 h-10 shrink-0 rounded-full border border-[var(--border)] flex items-center justify-center bg-[var(--bg)] group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] text-[var(--text-h)] group-hover:text-white transition-all duration-300 shadow-sm">
-                                    <span className="text-xl font-light transform transition-transform group-hover:translate-x-0.5">→</span>
+                                    <div className="w-10 h-10 shrink-0 rounded-full border border-[var(--border)] flex items-center justify-center bg-[var(--bg)] group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] text-[var(--text-h)] group-hover:text-white transition-all duration-300 shadow-sm">
+                                        <span className="text-xl font-light transform transition-transform group-hover:translate-x-0.5">→</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     </div>
                 ))}
             </div>
