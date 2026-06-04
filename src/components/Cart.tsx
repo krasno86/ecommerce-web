@@ -222,7 +222,7 @@ function App() {
                         </div>
 
                         <button onClick={handleCheckout}
-                                className="w-full py-3.5 bg-[var(--accent)] text-white font-bold text-sm rounded-xl hover:opacity-95 shadow-sm transition-opacity uppercase tracking-wider">
+                                className="w-full py-4.5 px-6 bg-[var(--accent)] text-white font-bold text-sm rounded-xl hover:opacity-95 shadow-sm transition-opacity uppercase tracking-wider">
                             Proceed to Checkout
                         </button>
                     </div>

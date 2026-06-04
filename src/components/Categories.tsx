@@ -7,7 +7,7 @@ interface Category {
     _id: string;
     name: string;
     slug: string;
-    image?: string[];
+    images?: string[];
     createdAt?: string;
     updatedAt?: string;
 }
@@ -41,7 +41,8 @@ function App() {
                     Our Collection
                 </h1>
                 <div className="w-12 h-1 bg-[var(--accent)] mx-auto mt-4 rounded-full"></div>
-                <p className="mt-4 text-sm text-[var(--text)]/70 uppercase tracking-widest font-medium">
+                <p className="text-sm text-[var(--text)]/70 uppercase tracking-widest font-medium"
+                   style={{ marginTop: '20px' }}>
                     Select a category to explore products
                 </p>
             </header>
@@ -62,9 +63,9 @@ function App() {
 
                             <div className="aspect-[16/10] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative">
                                 <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors duration-500 z-10" />
-                                {category.image && category.image.length > 0 ? (
+                                {category.images && category.images.length > 0 ? (
                                     <img
-                                        src={`http://localhost:3000${category.image[0]}`}
+                                        src={`http://localhost:3000${category.images[0]}`}
                                         alt={category.name}
                                         className="h-full w-full object-cover object-center scale-100 group-hover:scale-102 transition-transform duration-700 ease-out"
                                         onError={(e) => {
