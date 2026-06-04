@@ -64,6 +64,17 @@ function App() {
         }
     };
 
+    const handleRemoveGroup = async (productId: string) => {
+        try {
+            const response = await api.delete(`/cart/${productId}/group`);
+            if (response.data.success) {
+                fetchCart();
+            }
+        } catch (err) {
+            console.error('Error deleting item from cart:', err);
+        }
+    };
+
     if (loading) {
         return <div className="text-center py-20 font-medium text-[var(--text)]/70">Loading cart...</div>;
     }
@@ -140,7 +151,8 @@ function App() {
                                     <span className="font-mono font-black text-lg text-[var(--text-h)]">
                                         ${(item.product?.price || 0) * item.quantity}
                                     </span>
-                                    <button className="text-xs font-semibold text-red-500 hover:underline mt-1">
+                                    <button onClick={() => handleRemoveGroup(item.product._id)}
+                                            className="text-xs font-semibold text-red-500 hover:underline mt-1">
                                         Remove
                                     </button>
                                 </div>
