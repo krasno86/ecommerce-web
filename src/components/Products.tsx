@@ -24,17 +24,22 @@ function App() {
 
     const handleClick = async (productId: string) => {
         try {
+            setError('');
             const response = await api.post('/cart', { productId });
-            if (response.data.success) {
+            if (response.data && response.data.success) {
                 setQuantity(response.data.data.totalQuantity || response.data.totalQuantity);
             }
         } catch (err: any) {
-            setError('Failed to add product to cart. Please check backend connection.');
+            if (err.response && err.response.status === 401) {
+                setError('Please log in or register to add items to your cart.');
+            } else {
+                setError('Failed to add product. Please check your connection.');
+            }
             console.error(err);
         }
     };
 
-    const handleSearchSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    const handleSearchSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
             const params: any = {};
@@ -42,7 +47,7 @@ function App() {
             if (searchQuery.trim()) params.search = searchQuery.trim();
 
             const response = await api.get('/products', { params });
-            if (response.data.success) {
+            if (response.data && response.data.success) {
                 setProducts(response.data.data);
             }
         } catch (err: any) {
@@ -52,26 +57,47 @@ function App() {
     };
 
     useEffect(() => {
-        const fetchInitialData = async () => {
+        const loadPageData = async () => {
             try {
-                const resProducts = await api.get(`/categories/${id}`);
-                if (resProducts.data.success) {
-                    setCategory(resProducts.data.data.category);
-                    setProducts(resProducts.data.data.products);
+                if (id) {
+                    const catResponse = await api.get(`/categories/${id}`);
+                    if (catResponse.data && catResponse.data.success) {
+                        if (catResponse.data.data.category) {
+                            setCategory(catResponse.data.data.category);
+                            setProducts(catResponse.data.data.products || []);
+                        } else {
+                            setCategory(catResponse.data.data);
+                        }
+                    }
+                } else {
+                    const productResponse = await api.get('/products');
+                    if (productResponse.data && productResponse.data.success) {
+                        setProducts(productResponse.data.data);
+                    }
                 }
+            } catch (err) {
+                console.error('Failed to load initial page data:', err);
+                setError('Data could not be loaded. Please try again later.');
+            }
 
-                const resCart = await api.get('/cart');
-                if (resCart.data.success) {
-                    setQuantity(resCart.data.totalQuantity || 0);
+            const token = localStorage.getItem('token');
+            if (!token) {
+                return;
+            }
+
+            try {
+                const cartResponse = await api.get('/cart');
+                if (cartResponse.data && cartResponse.data.success) {
+                    const cartData = cartResponse.data.data;
+                    const total = cartData?.totalQuantity ?? cartResponse.data.totalQuantity ?? 0;
+                    setQuantity(Number(total));
                 }
-
-            } catch (err: any) {
-                setError('Failed to load initial data. Please check if the backend server is running.');
-                console.error(err);
+            } catch (err) {
+                console.error('Failed to load cart data:', err);
             }
         };
 
-        if (id) fetchInitialData();
+        loadPageData();
     }, [id]);
 
     return (
@@ -109,7 +135,7 @@ function App() {
             <header className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight text-[var(--text-h)] md:text-4xl uppercase">
-                        {category?.name || 'Loading Category...'}
+                        {category?.name || 'All Products'}
                     </h1>
                     <p className="mt-1 text-sm text-[var(--text)]/60">
                         Showing {products.length} products
@@ -134,8 +160,18 @@ function App() {
             </header>
 
             {error && (
-                <div className="p-4 mb-6 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-medium">
-                    {error}
+                <div className="p-4 mb-6 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl font-medium flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 shadow-sm">
+                    <span>{error}</span>
+                    {error.includes('log in') && (
+                        <div className="flex gap-3 text-xs font-bold uppercase tracking-wider">
+                            <Link to="/login" className="px-3 py-1.5 bg-amber-500 text-white rounded-lg hover:opacity-90 transition-opacity">
+                                Login
+                            </Link>
+                            <Link to="/registration" className="px-3 py-1.5 border border-amber-500/30 hover:border-amber-500 rounded-lg transition-colors">
+                                Register
+                            </Link>
+                        </div>
+                    )}
                 </div>
             )}
 

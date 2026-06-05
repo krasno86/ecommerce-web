@@ -5,25 +5,23 @@ import {Link, useNavigate} from 'react-router-dom';
 interface FormData {
     email: string;
     password: string;
-    confirmPassword: string;
 }
 
 interface FormErrors {
     [key: string]: string | undefined;
     email?: string;
     password?: string;
-    confirmPassword?: string;
 }
 
-const RegistrationForm: React.FC = () => {
+const Login: React.FC = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<FormData>({
         email: '',
         password: '',
-        confirmPassword: '',
     });
 
     const [errors, setErrors] = useState<FormErrors>({});
+    const [serverError, setServerError] = useState<string>('');
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -44,12 +42,6 @@ const RegistrationForm: React.FC = () => {
 
         if (!formData.password) {
             tempErrors.password = 'Password is required';
-        } else if (formData.password.length < 6) {
-            tempErrors.password = 'Password must be at least 6 characters long';
-        }
-
-        if (formData.confirmPassword !== formData.password) {
-            tempErrors.confirmPassword = 'Passwords do not match';
         }
 
         setErrors(tempErrors);
@@ -58,30 +50,32 @@ const RegistrationForm: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setServerError('');
 
         if (validate()) {
-            alert('Registration successfully');
-            console.log('Form Submitted Data:', {
-                email: formData.email,
-                password: formData.password,
-            });
-
-            const register = async () => {
+            const login = async () => {
                 try {
-                    const response = await api.post('/auth/register', { email: formData.email, password: formData.password });
+                    const response = await api.post('/auth/login', {
+                        email: formData.email,
+                        password: formData.password
+                    });
 
                     if (response.data.success) {
-                        alert('Welcome! Registration successful.');
                         const token = response.data.data.token;
                         localStorage.setItem('token', token);
                         navigate('/categories');
                     }
                 } catch (err: any) {
                     console.error(err);
+                    if (err.response && err.response.data && err.response.data.error) {
+                        setServerError(err.response.data.error);
+                    } else {
+                        setServerError('Invalid email or password. Please try again.');
+                    }
                 }
             };
 
-            register();
+            login();
         }
     };
 
@@ -91,15 +85,21 @@ const RegistrationForm: React.FC = () => {
 
                 <div className="text-center mb-8">
                     <h2 className="text-2xl font-bold tracking-tight text-[var(--text-h)]">
-                        Create an account
+                        Sign in to your account
                     </h2>
                     <p className="mt-2 text-sm text-[var(--text)]">
-                        Already have an account?{' '}
-                        <Link to="/login" className="text-[var(--accent)] hover:underline font-medium">
-                            Login
+                        Don't have an account?{' '}
+                        <Link to="/registration" className="text-[var(--accent)] hover:underline font-medium">
+                            Register
                         </Link>
                     </p>
                 </div>
+
+                {serverError && (
+                    <div className="p-3 mb-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-md text-sm text-left font-medium">
+                        {serverError}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
@@ -138,29 +138,11 @@ const RegistrationForm: React.FC = () => {
                         )}
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-[var(--text-h)] mb-1.5 text-left">
-                            Confirm Password
-                        </label>
-                        <input
-                            type="password"
-                            required
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            placeholder="••••••••"
-                            className="w-full px-3 py-2 border border-[var(--border)] rounded-md bg-[var(--bg)] text-[var(--text-h)] placeholder:text-[var(--text)]/50 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-colors"
-                        />
-                        {errors.confirmPassword && (
-                            <p className="text-red-500 text-xs mt-1 text-left">{errors.confirmPassword}</p>
-                        )}
-                    </div>
-
                     <button
                         type="submit"
                         className="w-full py-2.5 px-4 bg-[var(--accent)] text-white font-medium rounded-md hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Register
+                        Sign In
                     </button>
 
                 </form>
@@ -169,4 +151,4 @@ const RegistrationForm: React.FC = () => {
     );
 }
 
-export default RegistrationForm;
+export default Login;

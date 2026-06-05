@@ -4,12 +4,14 @@ import Products from './components/Products';
 import AllProducts from './components/AllProducts';
 import Categories from './components/Categories.tsx';
 import Cart from './components/Cart';
+import Login from './components/Login';
 
 function App() {
   return (
       <BrowserRouter>
         <Routes>
           <Route path="/registration" element={<Registration />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/products" element={<AllProducts />} />
